@@ -34,28 +34,22 @@ namespace Calculator
             while (!quit)
             {
                 string input;
-
-                input = Console.ReadLine();                
-
+                input = Console.ReadLine();
                 if (input.Length > 0)
                 {
-                    if (input == "quit")
-                    {
-                        quit = true;
-                        break;
-                    }
+                    string[] splitInput = ToTidyStringArray(input);                   
 
-                    string[] splitInput = ToTidyStringArray(input);
-
-                    // If there's only one string, it's a filename 
+                    // If there's only one string, it's a filename or it's 'quit'
                     if (splitInput.Length == 1)
-                    {                        
-                        string fileName = splitInput[0];
-                        quit = ProcessFileName(fileName);      
-                        //if (quit)
-                        //{
-                        //    break; // not sure this is necessary...
-                        //}
+                    {
+                        if (splitInput[0] == "quit")
+                        {
+                            quit = true;
+                        }
+                        else
+                        {
+                            quit = ProcessFileName(splitInput[0]);
+                        }
                     }   
                     else // If there are more than one string in the array, it's a manual input
                     {
@@ -67,6 +61,13 @@ namespace Calculator
                     Console.WriteLine("Please enter either: <register><operation><value>, print <register>, or quit.");
                 }
             }
+        }
+
+        private string[] ToTidyStringArray(string input)
+        {
+            input = input.Trim().ToLower();
+            string[] split = input.Split(' ');
+            return split;
         }
 
         private bool ProcessFileName(string fileName)
@@ -89,105 +90,106 @@ namespace Calculator
                 Console.WriteLine($"There was an error reading that file: {ex.Message}");
             }
             return success;
-        }
-
-        // Separate out the individual strings from the input based on spaces between them, removing any trailing or leading spaces and convert to lower case
-        private string[] ToTidyStringArray(string input)
-        {
-            input = input.Trim().ToLower();
-            string[] split = input.Split(' ');
-            return split;
-        }
+        }        
 
         private void DoWork(string input)
         {
-            string[] splitInput = ToTidyStringArray(input);
+            /* Valid inputs should be:
+             *      length of 2: <command><register>
+             *      length of 3: <register><operation><value>
+             * Any longer length is not recognised and will output an error message.
+             */
 
-            // If the input string is two, the first should be a command
+            string[] splitInput = ToTidyStringArray(input);
             if (splitInput.Length == 2) 
             {
-                string command = splitInput[0];
-                string register = splitInput[1];
-
-                if (commands.Contains(command))  
-                {
-                    if (command == "print")
-                    {
-                        if (allRegisters.Exists(r => r.Name == register))
-                        {
-                            PrintAnswerToConsole(allRegisters.Where(r => r.Name == register).First());
-                        }
-                        else
-                        {
-                            Console.WriteLine($"\"{register}\" is not a valid register name.");
-                        }
-                    }
-                    else 
-                    {
-                        Console.WriteLine($"No functionality yet provided for the existing \"{command}\" command.");
-                    }
-                }
-                else
-                {
-                    OutputErrorMessage(command);
-                }
+                ProcessCommand(splitInput);                
             }
-            else if (splitInput.Length == 3) // If the input string is three strings, we hope it's the required <register><operation><value>
+            else if (splitInput.Length == 3) 
             {
-                string registerOne = splitInput[0];
-                string operation = splitInput[1];
-                string valueOrRegisterTwo = splitInput[2];
-
-                if (operators.Contains(operation))
-                {
-                    // If the third input is a number, it will parse and we can use it as inputValue.
-                    // If not, it's an alphanumeric and is referring to an existing or new register
-                    decimal inputValue = 0;
-                    bool inputIsNumber = Decimal.TryParse(valueOrRegisterTwo, out inputValue);
-
-                    // Create the initial register to apply the operation to
-                    Register regOne = AddRegister(registerOne);
-
-                    // If the input 'value' is a register, store the request in the list of saved commands for lazy evaluation at print
-                    // if not, do the calculation now and update the value of the initial register
-                    if (!inputIsNumber)
-                    {
-                        Register regTwo = AddRegister(valueOrRegisterTwo);
-                        SaveInput(regOne, operation, regTwo);
-                    }
-                    else
-                    {
-                        regOne.Value = CalculateTwoDecimals(operation, regOne.Value, inputValue);
-                    }
-                }
-                else
-                {
-                    OutputErrorMessage(operation);
-                }
+                ProcessRegisterOperationValue(splitInput);                
             }
             else
             {
-                // An input format not known to the application such as a length of four strings
                 OutputErrorMessage(input); 
             }
         }
 
-        // This method takes a string '@operator' and two decimals, performs the matching dictionary operation and returns the decimal result
-        // The method is 'public' in order to run the unit tests. I feel there may be a better way for testing and/or disucssion on encapsulation
-        public decimal CalculateTwoDecimals(string @operator, decimal firstValue, decimal secondValue)
+        private void ProcessCommand(string[] splitInput)
         {
-            // To add further functionality, add a new dictionary item of 'operation' and the corresponding function
-            var operations = 
-                new Dictionary<string, Func<decimal, decimal, decimal>>
-                            {
-                                {"add", (x, y) => x + y },
-                                {"subtract", (x, y) => x - y },
-                                {"multiply", (x, y) => x * y }
-                            };
+            string command = splitInput[0];
+            string register = splitInput[1];
+            if (commands.Contains(command))
+            {
+                if (command == "print")
+                {
+                    if (allRegisters.Exists(r => r.Name == register))
+                    {
+                        Register reg = allRegisters.Where(r => r.Name == register).First(); // could do this within PrintAnswerToConsole()...?
+                        PrintAnswerToConsole(reg);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"\"{register}\" is not a valid register name.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"No functionality yet provided for the existing \"{command}\" command.");
+                }
+            }
+            else
+            {
+                OutputErrorMessage(command);
+            }
+        }
 
+        private void ProcessRegisterOperationValue(string[] splitInput)
+        {
+            string regOne = splitInput[0];
+            string operation = splitInput[1];
+            string valueOrRegisterTwo = splitInput[2];
+
+            if (operators.Contains(operation))
+            {
+                decimal inputValue = 0;
+                bool inputIsNumber = Decimal.TryParse(valueOrRegisterTwo, out inputValue);
+
+                // Create the initial register to apply the operation to
+                Register registerOne = GetRegister(regOne);
+
+                // If the input 'value' is a register, store the request in the list of saved commands for lazy evaluation at print
+                // if not, do the calculation now and update the value of the initial register
+                if (!inputIsNumber)
+                {
+                    Register registerTwo = GetRegister(valueOrRegisterTwo);
+                    SaveInput(registerOne, operation, registerTwo);
+                }
+                else
+                {
+                    registerOne.Value = CalculateTwoDecimals(operation, registerOne.Value, inputValue);
+                }
+            }
+            else
+            {
+                OutputErrorMessage(operation);
+            }
+        }
+
+
+        // The method is 'public' in order to run the unit tests. I feel there may be a better way for testing and/or disucssion on encapsulation
+        public decimal CalculateTwoDecimals(string operation, decimal firstValue, decimal secondValue)
+        {
+            // Add new operations here
+            var operations = new Dictionary<string, Func<decimal, decimal, decimal>>
+                                    {
+                                        {"add", (x, y) => x + y },
+                                        {"subtract", (x, y) => x - y },
+                                        {"multiply", (x, y) => x * y }
+                                    };
             try
             {
-                return operations[@operator](firstValue, secondValue);
+                return operations[operation](firstValue, secondValue);
             }
             catch (Exception ex)
             {
@@ -196,7 +198,7 @@ namespace Calculator
             }
         }
 
-        private Register AddRegister(string registerName)  // TODO: this method is doing two things, split it up
+        private Register GetRegister(string registerName)  
         {
             Register register = new Register(registerName);
             if (allRegisters.Exists(r => r.Name == registerName))
@@ -211,11 +213,11 @@ namespace Calculator
         }
 
         // Keep a record of all the inputs where they were two registers, in order to process at print time
-        private void SaveInput(Register regOne, string @operator, Register regTwo)
+        private void SaveInput(Register regOne, string operation, Register regTwo)
         {
             var saved = new SavedInput();
             saved.RegisterOne = regOne;
-            saved.Operator = @operator;
+            saved.Operator = operation;
             saved.RegisterTwo = regTwo;
             savedInputs.Add(saved);
         }
