@@ -4,17 +4,17 @@ using System.Text;
 
 namespace Calculator
 {
-    class SavedCommand
+    class SavedInput
     {
         /*
          * This class provides a space to store registers and the operations to be done to them
          * in order to be saved and calculated at print time (lazy)         
          */
 
-        public Register RegOne { get; set; }
+        public Register RegisterOne { get; set; }
 
-        public string Operation { get; set; }
+        public string Operator { get; set; }
 
-        public Register RegTwo { get; set; }
+        public Register RegisterTwo { get; set; }
     }
 }
