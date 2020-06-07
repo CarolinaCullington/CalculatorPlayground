@@ -15,6 +15,9 @@ namespace Calculator
          *  
          *  If the final <value> can be a number or a <register>, if it is a <register>, the line is saved to
          *  be evaluated at print time (lazy evaluation)
+         *  
+         *  Lists of all <registers> and saved inputs are placed in static collections to be accessed at any point
+         *  in the program.
          *      
          *  To add a new operator such as 'divide' add it to the 'operators' array then add a new 
          *  dictionary element to the CalculateTwoDecimals() method to cater for a new operation.
@@ -23,7 +26,6 @@ namespace Calculator
          *  and provide a new method to cater for a new type of command.
          */
 
-        // Static collections used for storage while the program is running
         private static List<Register> allRegisters;
         private static List<SavedInput> savedInputs;
 
@@ -43,13 +45,12 @@ namespace Calculator
             }
         }
 
+        /*  Inputs vary in length:
+         *      One string - it's a filename or it's 'quit'
+         *      More than one string - it's a manual input      
+         */
         private bool ProcessInput()
         {
-            /*  Inputs vary in length:
-             *      One string - it's a filename or it's 'quit'
-             *      More than one string - it's a manual input      
-             */
-
             bool quit = false;
             string input;
             input = Console.ReadLine();
@@ -106,16 +107,15 @@ namespace Calculator
                 Console.WriteLine($"There was an error reading that file: {ex.Message}");
             }
             return success;
-        }        
+        }
 
+        /*  Valid inputs should be:
+         *      length of 2: <command> <register>
+         *      length of 3: <register> <operation> <value>
+         *  Any longer length is not recognised and will output an error message.
+         */
         private void DoWork(string input)
         {
-            /* Valid inputs should be:
-             *      length of 2: <command> <register>
-             *      length of 3: <register> <operation> <value>
-             * Any longer length is not recognised and will output an error message.
-             */
-
             string[] splitInput = ToTidyStringArray(input);
             if (splitInput.Length == 2) 
             {
@@ -152,6 +152,10 @@ namespace Calculator
             }
         }
 
+        /*  If the input 'value' is a register, store the request in the list of saved commands 
+         *  if not, do the calculation now and update the value of the initial register.
+         *  TryParse() is used to determine if the value is a number or alphanumeric and therefore a register.
+         */
         private void ProcessRegisterOperationValue(string[] splitInput)
         {
             string regOne = splitInput[0];
@@ -162,9 +166,6 @@ namespace Calculator
                 decimal inputValue = 0;
                 bool inputIsNumber = Decimal.TryParse(valueOrRegisterTwo, out inputValue);
                 Register registerOne = ReturnRegister(regOne);
-
-                // If the input 'value' is a register, store the request in the list of saved commands 
-                // if not, do the calculation now and update the value of the initial register
                 if (!inputIsNumber)
                 {
                     Register registerTwo = ReturnRegister(valueOrRegisterTwo);
@@ -181,11 +182,11 @@ namespace Calculator
             }
         }
 
-
-        // The method is 'public' in order to run the unit tests. I feel there may be a better way for testing and/or disucssion on encapsulation
+        /*  The method is 'public' in order to run the unit tests. I feel there may be a better way for testing 
+         *  and/or disucssion on encapsulation? TODO.
+         */
         public decimal CalculateTwoDecimals(string operation, decimal firstValue, decimal secondValue)
         {
-            // Add new operations here
             var operations = new Dictionary<string, Func<decimal, decimal, decimal>>
                                     {
                                         {"add", (x, y) => x + y },
@@ -217,7 +218,8 @@ namespace Calculator
             return register;
         }
 
-        // Keep a record of all the inputs where they were two registers, in order to process at print time
+        /*  Keep a record of all the inputs where they were two registers, in order to process at print time
+         */
         private void SaveInput(Register regOne, string operation, Register regTwo)
         {
             var saved = new SavedInput();
@@ -227,9 +229,12 @@ namespace Calculator
             savedInputs.Add(saved);
         }
 
+        /*  A foreach will run over the savedInputs twice in order to:
+         *      Process the saved commands OTHER THAN the one we want to print, so that all sub-calculations are done before the final one.
+         *      Process all instances of the final registerToEvaluate to determine its final value.
+         */
         private decimal GetFinalResult(Register registerToEvaluate)
         {
-            // Process the saved commands OTHER THAN the one we want to print, so that all sub-calculations are done before the final one
             foreach (var savedItem in savedInputs)
             {
                 if (savedItem.RegisterOne.Name != registerToEvaluate.Name)
@@ -242,8 +247,6 @@ namespace Calculator
                             );
                 }
             }
-
-            // Now run through again, looking only for the final register to determine its final value
             foreach (var savedItem in savedInputs)
             {
                 if (savedItem.RegisterOne.Name == registerToEvaluate.Name)
