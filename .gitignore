@@ -36,3 +36,5 @@ SimpleCalculatorProject/SimpleCalculator/obj/Debug/netcoreapp3.1/Calculator.cspr
 SimpleCalculatorProject/SimpleCalculator/obj/
 obj
 [Oo]bj/
+SimpleCalculatorProject/SimpleCalculator/obj/Debug/netcoreapp3.1/.NETCoreApp,Version=v3.1.AssemblyAttributes.cs
+SimpleCalculatorProject/SimpleCalculator/obj/Release/netcoreapp3.1/.NETCoreApp,Version=v3.1.AssemblyAttributes.cs
