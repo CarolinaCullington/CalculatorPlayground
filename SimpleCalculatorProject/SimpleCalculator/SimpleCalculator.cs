@@ -34,42 +34,49 @@ namespace Calculator
         {    
             allRegisters = new List<Register>();
             savedInputs = new List<SavedInput>();
-
             operators = new string[] { "add", "subtract", "multiply" };
             commands = new string[] { "print" };
-
             bool quit = false;            
-
             while (!quit)
             {
-                string input;
-                input = Console.ReadLine();
-                if (input.Length > 0)
-                {
-                    string[] splitInput = ToTidyStringArray(input);                   
+                quit = ProcessInput();                
+            }
+        }
 
-                    // If there's only one string, it's a filename or it's 'quit'
-                    if (splitInput.Length == 1)
+        private bool ProcessInput()
+        {
+            /*  Inputs vary in length:
+             *      One string - it's a filename or it's 'quit'
+             *      More than one string - it's a manual input      
+             */
+
+            bool quit = false;
+            string input;
+            input = Console.ReadLine();
+            if (input.Length > 0)
+            {
+                string[] splitInput = ToTidyStringArray(input);
+                if (splitInput.Length == 1)
+                {
+                    if (splitInput[0] == "quit")
                     {
-                        if (splitInput[0] == "quit")
-                        {
-                            quit = true;
-                        }
-                        else
-                        {
-                            quit = ProcessFileName(splitInput[0]);
-                        }
-                    }   
-                    else // If there are more than one string in the array, it's a manual input
+                        quit = true;
+                    }
+                    else
                     {
-                        DoWork(input);
+                        quit = ProcessFileName(splitInput[0]);
                     }
                 }
                 else 
                 {
-                    Console.WriteLine("Please enter either: <register> <operation> <value>, <command> <register>, or quit.\n Alternatively, enter a file location of saved commands.");
+                    DoWork(input);
                 }
             }
+            else
+            {
+                Console.WriteLine("Please enter either: <register> <operation> <value>, <command> <register>, or quit.\n Alternatively, enter a file location of saved commands.");
+            }
+            return quit;
         }
 
         private string[] ToTidyStringArray(string input)
@@ -150,13 +157,10 @@ namespace Calculator
             string regOne = splitInput[0];
             string operation = splitInput[1];
             string valueOrRegisterTwo = splitInput[2];
-
             if (operators.Contains(operation))
             {
                 decimal inputValue = 0;
                 bool inputIsNumber = Decimal.TryParse(valueOrRegisterTwo, out inputValue);
-
-                // Create the initial register to apply the operation to
                 Register registerOne = ReturnRegister(regOne);
 
                 // If the input 'value' is a register, store the request in the list of saved commands 
