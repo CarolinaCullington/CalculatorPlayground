@@ -8,13 +8,13 @@ namespace Calculator
     {
         /*  
          *  The Simple Calculator takes the following as inputs:
-         *      <register> <operation> <value> - where operations are either 'add', 'subtract' and 'multiply'
-         *      <command> <register> - initially only 'print'
-         *      'quit'
-         *      A file location containing the above commands.
+         *      1. <register> <operation> <value> - where operations are either 'add', 'subtract' and 'multiply'
+         *      2. <command> <register> - initially only 'print'
+         *      3. 'quit'
+         *      4. A file location containing the above commands.
          *  
          *  If the final <value> can be a number or a <register>, if it is a <register>, the line is saved to
-         *  be evaluated at print time (lazy evaluation)
+         *  savedInputs in the saveInput() method to be evaluated at print time (lazy evaluation)
          *  
          *  Lists of all <registers> and saved inputs are placed in static collections to be accessed at any point
          *  in the program.
