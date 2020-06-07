@@ -64,7 +64,7 @@ namespace Calculator
                     }
                     else
                     {
-                        quit = ProcessFileName(splitInput[0]);
+                        quit = ProcessFile(splitInput[0]);
                     }
                 }
                 else 
@@ -86,7 +86,7 @@ namespace Calculator
             return split;
         }
 
-        private bool ProcessFileName(string fileName)
+        private bool ProcessFile(string fileName)
         {
             bool success = false;
             try
