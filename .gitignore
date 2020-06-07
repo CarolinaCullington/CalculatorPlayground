@@ -33,8 +33,5 @@ SimpleCalculatorProject/SimpleCalculator/bin/Release/netcoreapp3.1/win-x86/SOS_R
 SimpleCalculatorProject/SimpleCalcTestProject/obj/Release/netcoreapp3.1/SimpleCalcTestProject.csproj.FileListAbsolute.txt
 SimpleCalculatorProject/SimpleCalculator/obj/Debug/netcoreapp3.1/Calculator.AssemblyInfo.cs
 SimpleCalculatorProject/SimpleCalculator/obj/Debug/netcoreapp3.1/Calculator.csproj.FileListAbsolute.txt
-SimpleCalculatorProject/SimpleCalculator/obj/
-obj
-[Oo]bj/
-SimpleCalculatorProject/SimpleCalculator/obj/Debug/netcoreapp3.1/.NETCoreApp,Version=v3.1.AssemblyAttributes.cs
-SimpleCalculatorProject/SimpleCalculator/obj/Release/netcoreapp3.1/.NETCoreApp,Version=v3.1.AssemblyAttributes.cs
+*/**/obj/Debug
+*/**/obj/Release
