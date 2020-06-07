@@ -7,11 +7,20 @@ namespace Calculator
     public class SimpleCalculator
     {
         /*  
-         * To add a new operator such as 'divide' add it to the 'operators' array then add a new 
-         * dictionary element to the CalculateTwoDecimals() method to cater for a new operation.
+         *  The Simple Calculator takes the following as inputs:
+         *      <register> <operation> <value> - where operations are either 'add', 'subtract' and 'multiply'
+         *      <command> <register> - initially only 'print'
+         *      'quit'
+         *      A file location containing the above commands.
+         *  
+         *  If the final <value> can be a number or a <register>, if it is a <register>, the line is saved to
+         *  be evaluated at print time (lazy evaluation)
+         *      
+         *  To add a new operator such as 'divide' add it to the 'operators' array then add a new 
+         *  dictionary element to the CalculateTwoDecimals() method to cater for a new operation.
          * 
-         * To add a new program command such as 'share' or 'send', add it to the 'commands' array
-         * and provide a new method to cater for a new type of command.
+         *  To add a new program command such as 'share' or 'send', add it to the 'commands' array
+         *  and provide a new method to cater for a new type of command.
          */
 
         // Static collections used for storage while the program is running
@@ -58,7 +67,7 @@ namespace Calculator
                 }
                 else 
                 {
-                    Console.WriteLine("Please enter either: <register><operation><value>, print <register>, or quit.");
+                    Console.WriteLine("Please enter either: <register> <operation> <value>, <command> <register>, or quit.\n Alternatively, enter a file location of saved commands.");
                 }
             }
         }
@@ -95,8 +104,8 @@ namespace Calculator
         private void DoWork(string input)
         {
             /* Valid inputs should be:
-             *      length of 2: <command><register>
-             *      length of 3: <register><operation><value>
+             *      length of 2: <command> <register>
+             *      length of 3: <register> <operation> <value>
              * Any longer length is not recognised and will output an error message.
              */
 
@@ -123,15 +132,7 @@ namespace Calculator
             {
                 if (command == "print")
                 {
-                    if (allRegisters.Exists(r => r.Name == register))
-                    {
-                        Register reg = allRegisters.Where(r => r.Name == register).First(); // could do this within PrintAnswerToConsole()...?
-                        PrintAnswerToConsole(reg);
-                    }
-                    else
-                    {
-                        Console.WriteLine($"\"{register}\" is not a valid register name.");
-                    }
+                    PrintAnswerToConsole(register);                    
                 }
                 else
                 {
@@ -156,13 +157,13 @@ namespace Calculator
                 bool inputIsNumber = Decimal.TryParse(valueOrRegisterTwo, out inputValue);
 
                 // Create the initial register to apply the operation to
-                Register registerOne = GetRegister(regOne);
+                Register registerOne = ReturnRegister(regOne);
 
-                // If the input 'value' is a register, store the request in the list of saved commands for lazy evaluation at print
+                // If the input 'value' is a register, store the request in the list of saved commands 
                 // if not, do the calculation now and update the value of the initial register
                 if (!inputIsNumber)
                 {
-                    Register registerTwo = GetRegister(valueOrRegisterTwo);
+                    Register registerTwo = ReturnRegister(valueOrRegisterTwo);
                     SaveInput(registerOne, operation, registerTwo);
                 }
                 else
@@ -198,7 +199,7 @@ namespace Calculator
             }
         }
 
-        private Register GetRegister(string registerName)  
+        private Register ReturnRegister(string registerName)  
         {
             Register register = new Register(registerName);
             if (allRegisters.Exists(r => r.Name == registerName))
@@ -252,13 +253,22 @@ namespace Calculator
                     registerToEvaluate.Value = savedItem.RegisterOne.Value;
                 }
             }
-
             return registerToEvaluate.Value;
         }
 
         private void OutputErrorMessage(string input) => Console.WriteLine($"The command \"{input}\" is an invalid command.\r");
 
-        // Output the final result to the console
-        private void PrintAnswerToConsole(Register regToPrint) => Console.WriteLine(GetFinalResult(regToPrint).ToString());
+        private void PrintAnswerToConsole(string registerName) 
+        {
+            if (allRegisters.Exists(r => r.Name == registerName))
+            {
+                Register register = allRegisters.Where(r => r.Name == registerName).First();
+                Console.WriteLine(GetFinalResult(register).ToString());
+            }
+            else
+            {
+                Console.WriteLine($"\"{registerName}\" is not a valid register name.");
+            }            
+        }
     }
 }
