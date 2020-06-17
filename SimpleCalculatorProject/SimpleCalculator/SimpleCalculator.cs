@@ -38,6 +38,7 @@ namespace Calculator
             savedInputs = new List<SavedInput>();
             operators = new string[] { "add", "subtract", "multiply" };
             commands = new string[] { "print" };
+
             bool quit = false;            
             while (!quit)
             {
@@ -56,28 +57,35 @@ namespace Calculator
             input = Console.ReadLine();
             if (input.Length > 0)
             {
-                string[] splitInput = ToTidyStringArray(input);
-                if (splitInput.Length == 1)
+                if (input.ToLower().Trim() == "quit")
                 {
-                    if (splitInput[0] == "quit")
-                    {
-                        quit = true;
-                    }
-                    else
-                    {
-                        quit = ProcessFile(splitInput[0]);
-                    }
+                    quit = true;
                 }
-                else 
+                else
                 {
-                    DoWork(input);
-                }
+                    quit = ProcessFileOrString(input);                    
+                }                
             }
             else
             {
                 Console.WriteLine("Please enter either: <register> <operation> <value>, <command> <register>, or quit.\n Alternatively, enter a file location of saved commands.");
             }
             return quit;
+        }
+
+        private bool ProcessFileOrString(string input)
+        {
+            bool finished = false;
+            string[] splitInput = ToTidyStringArray(input);
+            if (splitInput.Length == 1)
+            {
+                finished = ProcessFile(splitInput[0]);
+            }
+            else
+            {
+                DoWork(input);
+            }
+            return finished;
         }
 
         private string[] ToTidyStringArray(string input)
