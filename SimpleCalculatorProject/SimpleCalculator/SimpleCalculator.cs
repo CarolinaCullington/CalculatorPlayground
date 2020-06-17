@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace Calculator
 {
@@ -46,10 +47,6 @@ namespace Calculator
             }
         }
 
-        /*  Inputs vary in length:
-         *      One string - it's a filename or it's 'quit'
-         *      More than one string - it's a manual input      
-         */
         private bool ProcessInput()
         {
             bool quit = false;
@@ -63,7 +60,7 @@ namespace Calculator
                 }
                 else
                 {
-                    quit = ProcessFileOrString(input);                    
+                    quit = ProcessFileOrManualInput(input);               
                 }                
             }
             else
@@ -73,19 +70,34 @@ namespace Calculator
             return quit;
         }
 
-        private bool ProcessFileOrString(string input)
+        /*  Inputs vary in length:
+         *      One string - it's a filename or it's 'quit'
+         *      More than one string - it's a manual input      
+         */
+        private bool ProcessFileOrManualInput(string input)
         {
             bool finished = false;
-            string[] splitInput = ToTidyStringArray(input);
-            if (splitInput.Length == 1)
+            
+            if (IsAFilename(input))
             {
-                finished = ProcessFile(splitInput[0]);
+                finished = ProcessFile(input);
             }
             else
             {
                 DoWork(input);
             }
             return finished;
+        }
+
+        private bool IsAFilename(string input)
+        {
+            bool isAFilename = false;
+            string[] splitInput = ToTidyStringArray(input);
+            if (splitInput.Length == 1)
+            {
+                isAFilename = true;
+            }
+            return isAFilename;
         }
 
         private string[] ToTidyStringArray(string input)
@@ -100,7 +112,7 @@ namespace Calculator
             bool success = false;
             try
             {
-                string[] lines = System.IO.File.ReadAllLines(fileName);
+                string[] lines = System.IO.File.ReadAllLines(fileName); // Need trimming? Needs testing!
                 foreach (var line in lines)
                 {
                     if (line != "quit")
